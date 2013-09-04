@@ -1,4 +1,4 @@
-package br.net.toolbox.vsjson;
+package br.net.toolbox.vsjson.helper;
 
 public class Helper {
 

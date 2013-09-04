@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import br.net.toolbox.vsjson.helper.Helper;
 import br.net.toolbox.vsjson.helper.State;
 
 public class Parser {
@@ -38,6 +39,7 @@ public class Parser {
 						startList();
 						break;
 					case Helper.TOKEN_START_OBJECT:
+						startObject();
 						break;
 					case Helper.TOKEN_STRING_CONTAINER:
 						handleString();
@@ -56,12 +58,23 @@ public class Parser {
 
 	private void startList(){
 		List list = new ArrayList();
-		State state = new State();
-		state.parent = list;
-		state.type = Helper.STATE_IN_LIST;
+		State state = State.createState(Helper.STATE_IN_LIST, list);
 		this.states.add(state);
 	}
-	
+	private void startObject(){
+		Map map = new HashMap();
+		State state = State.createState(Helper.STATE_IN_DICT, map);
+		State actualState = this.states.get(this.states.size()-1);
+		switch(actualState.type){
+		case Helper.STATE_IN_LIST:
+			((List)actualState.object).add(map);
+			break;
+		default:
+			break;
+		}
+		this.states.add(state);
+		
+	}
 	private void createKey(String string){
 		State state = new State();
 		state.key = string;
@@ -72,11 +85,11 @@ public class Parser {
 	
 	private void handleString(){
 		String string = cosumeString();
-		State state = this.states.get(this.states.size()-1);
+		State state = getLastState();
 		
 		switch (state.type) {
 		case Helper.STATE_IN_LIST:
-			((List)state.parent).add(string);
+			((List)state.object).add(string);
 			break;
 		case Helper.STATE_IN_DICT:
 			createKey(string);
@@ -87,6 +100,9 @@ public class Parser {
 		
 	}
 	private String cosumeString(){
+		
+		i++;
+		
 		int f = i;
 		
 		while(data[i] != Helper.TOKEN_STRING_CONTAINER )
@@ -99,4 +115,8 @@ public class Parser {
 		binds.put(key, value);
 	}
 
+	
+	private State getLastState(){
+		return this.states.get(this.states.size()-1);
+	}
 }
