@@ -14,5 +14,9 @@ public class Helper {
 	public final static int STATE_IN_DICT = 2;
 	public final static int STATE_IN_KEY = 3;
 	
+	public final static String VALUE_TRUE = "TRUE";
+	public final static String VALUE_FALSE = "FALSE";
+	public final static String VALUE_NULL = "NULL";
+	
 	
 }

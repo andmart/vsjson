@@ -34,6 +34,7 @@ public class Parser {
 					case Helper.TOKEN_END_OBJECT:
 						break;
 					case Helper.TOKEN_KEY_VALUE_SEPARATOR:
+						handleValue();
 						break;
 					case Helper.TOKEN_START_LIST:
 						startList();
@@ -56,6 +57,37 @@ public class Parser {
 		return retorno;
 	}
 
+	
+	private void handleValue(){
+		i++;
+
+		char c = Character.toUpperCase(data[i]);
+		
+		State state = getLastState();
+		
+		Object value = null;
+		
+		switch(c){
+		case '-': case '0':case '1':case '2':case '3': case '4':case '5':case '6': case '7':case '8':case '9':
+			 value = consumeNumber();
+			break;
+		case Helper.TOKEN_STRING_CONTAINER:
+			 value = cosumeString();
+			break;
+		case 'T': case 'F': case 'N':
+			value = handleTrueFalseNull();
+		}
+		
+		if(state.type == Helper.STATE_IN_KEY){
+			pop();
+			((Map)getLastState().object).put(state.key, value);
+		}else if(state.type == Helper.STATE_IN_LIST){
+			((List)getLastState().object).add(value);
+		}
+		
+		
+	}
+	
 	private void startList(){
 		List list = new ArrayList();
 		State state = State.createState(Helper.STATE_IN_LIST, list);
@@ -75,6 +107,24 @@ public class Parser {
 		this.states.add(state);
 		
 	}
+	
+	private Object handleTrueFalseNull(){
+
+		char c = Character.toUpperCase(data[i]);
+		Object value = null;
+		switch(c){
+		case 'T':
+			if(String.valueOf(Arrays.copyOfRange(data, i, i+3)).toUpperCase().equals(Helper.VALUE_TRUE))
+				value = Boolean.TRUE;
+		case 'F':
+			if(String.valueOf(Arrays.copyOfRange(data, i, i+3)).toUpperCase().equals(Helper.VALUE_FALSE))
+				value = Boolean.FALSE;
+		}
+		
+		return value;
+		
+	}
+	
 	private void createKey(String string){
 		State state = new State();
 		state.key = string;
@@ -82,7 +132,15 @@ public class Parser {
 		this.states.add(state);
 	}
 	
-	
+	private Double consumeNumber(){
+		int f = i;
+
+		while (data[i] != Helper.TOKEN_END_LIST || data[i] !=Helper.TOKEN_END_OBJECT || data[i] != Helper.TOKEN_VALUE_SEPARATOR)
+			i++;
+		i--;
+		return Double.parseDouble(String.valueOf(Arrays.copyOfRange(data, f, i)));
+		
+	}
 	private void handleString(){
 		String string = cosumeString();
 		State state = getLastState();
@@ -107,7 +165,7 @@ public class Parser {
 		
 		while(data[i] != Helper.TOKEN_STRING_CONTAINER )
 			i++;
-		
+		i--;
 		return String.valueOf(Arrays.copyOfRange(data, f, i));
 	}
 	
@@ -118,5 +176,11 @@ public class Parser {
 	
 	private State getLastState(){
 		return this.states.get(this.states.size()-1);
+	}
+	
+	private State pop(){
+		State state = getLastState();
+		this.states.remove(this.states.size() -1);
+		return state;
 	}
 }
