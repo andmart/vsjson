@@ -15,6 +15,7 @@ public class Parser {
 	private ArrayList<State> states = new ArrayList<State>();
 	private int i = 0;
 	private char [] data;
+	private Class rootClass;
 
 	public Object fromJSON(String jsonData) {
 
@@ -30,8 +31,10 @@ public class Parser {
 				
 				switch (c) {
 					case Helper.TOKEN_END_LIST:
+						retorno = pop().object;
 						break;
 					case Helper.TOKEN_END_OBJECT:
+						retorno = pop().object;
 						break;
 					case Helper.TOKEN_KEY_VALUE_SEPARATOR:
 						handleValue();
@@ -62,6 +65,12 @@ public class Parser {
 		i++;
 
 		char c = Character.toUpperCase(data[i]);
+		
+		while (c == 32){
+			i++;
+			c = Character.toUpperCase(data[i]);
+		}
+			
 		
 		State state = getLastState();
 		
@@ -135,9 +144,8 @@ public class Parser {
 	private Double consumeNumber(){
 		int f = i;
 
-		while (data[i] != Helper.TOKEN_END_LIST || data[i] !=Helper.TOKEN_END_OBJECT || data[i] != Helper.TOKEN_VALUE_SEPARATOR)
+		while (data[i] != Helper.TOKEN_END_LIST && data[i] !=Helper.TOKEN_END_OBJECT && data[i] != Helper.TOKEN_VALUE_SEPARATOR)
 			i++;
-		i--;
 		return Double.parseDouble(String.valueOf(Arrays.copyOfRange(data, f, i)));
 		
 	}
@@ -165,7 +173,6 @@ public class Parser {
 		
 		while(data[i] != Helper.TOKEN_STRING_CONTAINER )
 			i++;
-		i--;
 		return String.valueOf(Arrays.copyOfRange(data, f, i));
 	}
 	
@@ -173,6 +180,10 @@ public class Parser {
 		binds.put(key, value);
 	}
 
+	public void listOf(Class cls){
+		this.rootClass = cls;
+	}
+	
 	
 	private State getLastState(){
 		return this.states.get(this.states.size()-1);
