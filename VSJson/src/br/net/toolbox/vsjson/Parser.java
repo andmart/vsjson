@@ -15,9 +15,10 @@ public class Parser {
 	private ArrayList<State> states = new ArrayList<State>();
 	private int i = 0;
 	private char [] data;
-	private Class rootClass;
-
-	public Object fromJSON(String jsonData) {
+	private Class rootClass = null;
+	private Object rootObject;
+	
+	public Object fromJSON(String jsonData) throws InstantiationException, IllegalAccessException {
 
 		Object retorno = null;
 
@@ -43,7 +44,15 @@ public class Parser {
 						startList();
 						break;
 					case Helper.TOKEN_START_OBJECT:
-						startObject();
+						if (this.rootClass == null){
+							startObject();
+						}else{
+							if(getLastState().type == Helper.STATE_IN_LIST){
+								startRootObject();
+							}else if(getLastState().type == Helper.STATE_IN_ROOT_OBJECT){
+								startInnerObject();
+							}
+						}
 						break;
 					case Helper.TOKEN_STRING_CONTAINER:
 						handleString();
@@ -60,7 +69,16 @@ public class Parser {
 		return retorno;
 	}
 
+	private void startInnerObject(){}
 	
+	private void startRootObject() throws InstantiationException, IllegalAccessException{
+		if (rootClass != null){
+			rootObject = rootClass.newInstance();
+			State state = State.createState(Helper.STATE_IN_ROOT_OBJECT, rootObject);
+			((List)(getLastState().object)).add(rootObject);
+			this.states.add(state);
+		}
+	}
 	private void handleValue(){
 		i++;
 

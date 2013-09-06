@@ -13,6 +13,7 @@ public class Helper {
 	public final static int STATE_IN_LIST = 1;
 	public final static int STATE_IN_DICT = 2;
 	public final static int STATE_IN_KEY = 3;
+	public final static int STATE_IN_ROOT_OBJECT = 4;
 	
 	public final static String VALUE_TRUE = "TRUE";
 	public final static String VALUE_FALSE = "FALSE";
