@@ -1,5 +1,6 @@
 package br.net.toolbox.vsjson;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -69,7 +70,12 @@ public class Parser {
 		return retorno;
 	}
 
-	private void startInnerObject(){}
+	private void startInnerObject(){
+		
+		//State state 
+		//Class cls = findAttributeClass(name)
+		
+	}
 	
 	private void startRootObject() throws InstantiationException, IllegalAccessException{
 		if (rootClass != null){
@@ -211,5 +217,14 @@ public class Parser {
 		State state = getLastState();
 		this.states.remove(this.states.size() -1);
 		return state;
+	}
+	
+	private Class findAttributeClass(String name) throws SecurityException, NoSuchFieldException{
+		State state = getLastState();
+		
+		Field field = rootClass.getDeclaredField(name);
+		
+		return field.getDeclaringClass();
+		
 	}
 }
